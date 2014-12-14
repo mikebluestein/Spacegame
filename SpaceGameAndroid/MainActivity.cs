@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 
 using CocosSharp;
 using SpaceGameCommon;
+using Amazon.Device.GameController;
 
 namespace Spacegame
 {
@@ -31,7 +32,20 @@ namespace Spacegame
             var application = new CCApplication (); 
             application.ApplicationDelegate = new GameAppDelegate ();
             SetContentView (application.AndroidContentView);
+
+            GameController.Init (this);
+
             application.StartGame ();
+        }
+
+        public override bool OnGenericMotionEvent (MotionEvent e)
+        {
+            bool handled = false;
+            try {
+                handled = GameController.OnGenericMotionEvent (e);
+            } catch (GameController.DeviceNotFoundException) {
+            }
+            return handled || base.OnGenericMotionEvent (e);
         }
     }
 }

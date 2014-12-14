@@ -4,6 +4,8 @@ using CocosSharp;
 using CocosDenshion;
 using Microsoft.Xna.Framework.Input;
 
+using Amazon.Device.GameController;
+
 namespace SpaceGameCommon
 {
     public class GameLayer : CCLayerColor
@@ -14,9 +16,6 @@ namespace SpaceGameCommon
 
         const int SHIP_UP_TAG = 1;
         const int SHIP_DOWN_TAG = 2;
-
-        bool isMovingUp = false;
-        bool isMovingDown = false;
 
         CCDrawNode ship;
         CCNode shots;
@@ -54,24 +53,7 @@ namespace SpaceGameCommon
             Schedule (_ => CheckEnemyCollisions ());
 
 #if FIRESTICK
-            Schedule (_ => {
-            
-                var state = Keyboard.GetState ();
-
-                var up = state.IsKeyDown (Keys.Up);
-                var down = state.IsKeyDown (Keys.Down);
-                var bothup = !up && !down;
-   
-                if (up) {
-                    MoveShipUp ();
-                } else if (down) {
-                    MoveShipDown ();
-                } else if (bothup) {
-                    ship.StopAllActions ();
-                    isMovingUp = false;
-                    isMovingDown = false;
-                }
-            });
+            Schedule (_ => HandleRightJoystick ());
 #endif
 
             CCSimpleAudioEngine.SharedEngine.PlayEffect ("sounds/laser", true);
@@ -79,45 +61,28 @@ namespace SpaceGameCommon
             InitExplosionParticles ();
         }
 
-        public void MoveShipUp ()
+        public void HandleRightJoystick ()
         {
-            ship.StopAction (SHIP_DOWN_TAG);
+            GameController gameController = null;
 
-            if (!isMovingUp) {
-        
-                var location = new CCPoint (ship.Position.X, VisibleBoundsWorldspace.Size.Height - 75.0f);
-        
-                float ds = CCPoint.Distance (ship.Position, location);
-                var dt = ds / SHIP_SPEED;
-        
-                var moveShip = new CCMoveTo (dt, location);
-                var easeUp = new CCEaseSineInOut (moveShip);
-                easeUp.Tag = SHIP_UP_TAG;
-        
-                ship.RunAction (easeUp);
+            try {
+                gameController = GameController.GetControllerByPlayer (1);
 
-                isMovingUp = true;
+
+                float deltaX = gameController.GetAxisValue (GameControllerAxis.StickRightX);
+                float deltaY = gameController.GetAxisValue (GameControllerAxis.StickRightY);
+
+                MoveShip(deltaX, deltaY);
+          
+            } catch (GameController.PlayerNumberNotFoundException) {
             }
         }
 
-        public void MoveShipDown ()
+        void MoveShip(float dx, float dy)
         {
-            ship.StopAction (SHIP_UP_TAG);
+            float speed = 10.0f;
 
-            if (!isMovingDown) {
-                var location = new CCPoint (ship.Position.X, 75.0f);
-        
-                float ds = CCPoint.Distance (ship.Position, location);
-                var dt = ds / SHIP_SPEED;
-        
-                var moveShip = new CCMoveTo (dt, location);
-                var easeDown = new CCEaseSineInOut (moveShip);
-                easeDown.Tag = SHIP_DOWN_TAG;
-        
-                ship.RunAction (easeDown);
-
-                isMovingDown = true;
-            }
+            ship.Position = new CCPoint (ship.Position.X + speed * dx, ship.Position.Y - speed * dy);
         }
 
         void AddStars (CCRect bounds)
