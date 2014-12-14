@@ -117,7 +117,7 @@ namespace SpaceGameCommon
         {
             var shot = new CCDrawNode ();
 
-            shot.DrawCircle (new CCPoint (0, 0), SHOT_RADIUS, CCColor4B.Red);
+            shot.DrawCircle (new CCPoint (0, 0), SHOT_RADIUS, CCColor4B.Yellow);
             shots.AddChild (shot); 
             shot.Position = new CCPoint (ship.Position.X + 60.0f, ship.Position.Y - 2.5f);
 
@@ -148,7 +148,7 @@ namespace SpaceGameCommon
         void AddEnemy ()
         {
             var enemy = new CCDrawNode ();
-            enemy.DrawCircle (new CCPoint (0, 0), ENEMY_RADIUS, CCColor4B.Blue);
+            enemy.DrawCircle (new CCPoint (0, 0), ENEMY_RADIUS, CCColor4B.White);
             enemy.Position = GetRandomPointY (ENEMY_RADIUS);
             enemies.AddChild (enemy);
 
